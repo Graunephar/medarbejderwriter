@@ -10,4 +10,5 @@
     <string name="write_not_able_message">We could not write</string>
     <string name="write_error">An error occured</string>
     <string name="write_fill_fields">Please fill the required fields</string>
+    <string name="writer_tag_not_placed_message">You should place a tag before you can write</string>
 </resources>

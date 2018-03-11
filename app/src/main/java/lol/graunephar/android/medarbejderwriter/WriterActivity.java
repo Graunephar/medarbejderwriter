@@ -14,13 +14,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.ndeftools.Message;
+import org.ndeftools.MimeRecord;
+import org.ndeftools.externaltype.AndroidApplicationRecord;
+
+import java.io.UnsupportedEncodingException;
+
 import be.appfoundry.nfclibrary.activities.NfcActivity;
 import be.appfoundry.nfclibrary.exceptions.InsufficientCapacityException;
 import be.appfoundry.nfclibrary.exceptions.ReadOnlyTagException;
 import be.appfoundry.nfclibrary.exceptions.TagNotPresentException;
 import be.appfoundry.nfclibrary.tasks.interfaces.AsyncOperationCallback;
 import be.appfoundry.nfclibrary.tasks.interfaces.AsyncUiCallback;
-import be.appfoundry.nfclibrary.utilities.async.WriteEmailNfcAsync;
+import be.appfoundry.nfclibrary.utilities.async.WriteCallbackNfcAsync;
 import be.appfoundry.nfclibrary.utilities.interfaces.NfcWriteUtility;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,9 +52,11 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
     EditText pointTxt;
     @BindView(R.id.writer_write_btn)
     Button writeBtn;
-    private boolean readyToWrite = false;
+
+    private boolean mReadyToWrite = false;
     private String TAG = WriterActivity.class.getName();
     NFCWriter mWriter;
+    private boolean mTagHasBeenPlaces = false;
 
 
     public WriterActivity() {
@@ -93,10 +101,10 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
 
         if (checkEmpty(name, fact, point)) {
             greyoutButton(true);
-            readyToWrite = false;
+            mReadyToWrite = false;
         } else {
             greyoutButton(false);
-            readyToWrite = true;
+            mReadyToWrite = true;
         }
     }
 
@@ -143,6 +151,10 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
         };
     }
 
+    private void tellUser(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
     /* Permissions */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -177,6 +189,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         Toast.makeText(getApplicationContext(), getString(R.string.writer_message_new_tag_found) + "content", Toast.LENGTH_SHORT).show();
+        mTagHasBeenPlaces = true;
 
     }
 
@@ -186,12 +199,38 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
     @OnClick(R.id.writer_write_btn)
     public void startWritingToTag() {
 
-        if (!readyToWrite) {
-            Toast.makeText(getApplicationContext(), getString(R.string.write_fill_fields), Toast.LENGTH_SHORT).show();
+        if (!mReadyToWrite) {
+            tellUser(getString(R.string.write_fill_fields));
+            return;
+        } else if(!mTagHasBeenPlaces) {
+            tellUser(getString(R.string.writer_tag_not_placed_message));
             return;
         }
 
-        
+        AndroidApplicationRecord aar = new AndroidApplicationRecord();
+        aar.setPackageName("org.ndeftools.boilerplate");
+        MimeRecord mimeRecord = new MimeRecord();
+        mimeRecord.setMimeType("text/plain");
+        try {
+            mimeRecord.setData("This is my data".getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        final Message message = new Message(); //  org.ndeftools.Message
+        message.add(aar);
+        message.add(mimeRecord);
+
+
+            AsyncOperationCallback writecallback= new AsyncOperationCallback() {
+
+                @Override
+                public boolean performWrite(NfcWriteUtility writeUtility) throws ReadOnlyTagException, InsufficientCapacityException, TagNotPresentException, FormatException {
+                    return writeUtility.writeNdefMessageToTagFromIntent( message.getNdefMessage(),getIntent());
+                }
+            };
+
+            new WriteCallbackNfcAsync(this, writecallback).executeWriteOperation();
+
     }
 
     /* AsyncUiCallback methods */

@@ -35,7 +35,6 @@ public class NFCWriter {
 
     public boolean write(NdefMessage rawMessage, Intent intent) {
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
         NdefFormatable format = NdefFormatable.get(tag);
         if (format != null) {
             Log.d(TAG, "Write unformatted tag");
