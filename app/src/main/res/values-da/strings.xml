@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Medarbejder Writer</string>
+    <string name="writer_fun_label_text">Noget sjovt</string>
+    <string name="writer_name_label_text">Navn på enhed</string>
+    <string name="writer_point_label_text">Point for fund</string>
+</resources>
