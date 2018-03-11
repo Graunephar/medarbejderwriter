@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="write_fail_message" type="id">Fail!</item>
+    <item name="write_success_message" type="id">Sucess</item>
+</resources>

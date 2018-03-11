@@ -9,9 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".WriterActivity"
-            android:screenOrientation="portrait"
+        <activity
+            android:name=".WriterActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             android:theme="@style/SKS">
             <intent-filter>
 
@@ -19,7 +20,19 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:host="ext"
+                    android:pathPrefix="/peterjohnwelcome.com:nfcapp"
+                    android:scheme="vnd.android.nfc" />
+            </intent-filter>
         </activity>
     </application>
-
+    <!-- Register NFC -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="true" />
 </manifest>

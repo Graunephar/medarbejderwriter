@@ -7,7 +7,7 @@
     tools:context="lol.graunephar.android.medarbejderwriter.WriterActivity">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/writer_write_btn"
         android:layout_width="0dp"
         android:layout_height="57dp"
         android:layout_marginBottom="29dp"
@@ -87,8 +87,8 @@
         android:layout_marginBottom="16dp"
         android:ems="10"
         android:inputType="number"
-        app:layout_constraintBottom_toTopOf="@+id/button"
-        app:layout_constraintStart_toStartOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/writer_write_btn"
+        app:layout_constraintStart_toStartOf="@+id/writer_write_btn"
         app:layout_constraintTop_toBottomOf="@+id/writer_fun_txt" />
 
 </android.support.constraint.ConstraintLayout>

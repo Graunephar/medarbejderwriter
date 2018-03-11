@@ -3,4 +3,11 @@
     <string name="writer_fun_label_text">Fun fact</string>
     <string name="writer_name_label_text">Name of ressource</string>
     <string name="writer_point_label_text">Point for finding</string>
+    <string name="writer_message_new_tag_found">New tag found with content:</string>
+    <string name="write_fail_message">Fail!</string>
+    <string name="write_success_message">Sucess</string>
+    <string name="write_started_message">We started writing</string>
+    <string name="write_not_able_message">We could not write</string>
+    <string name="write_error">An error occured</string>
+    <string name="write_fill_fields">Please fill the required fields</string>
 </resources>
