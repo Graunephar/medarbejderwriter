@@ -11,4 +11,6 @@
     <string name="write_error">An error occured</string>
     <string name="write_fill_fields">Please fill the required fields</string>
     <string name="writer_tag_not_placed_message">You should place a tag before you can write</string>
+    <string name="writer_not_working_encoding_message">Could not write the content you have provided. Have you used special characters?</string>
+    <string name="writer_write_in_progress_message">Write already in progress please wait for it to finish</string>
 </resources>

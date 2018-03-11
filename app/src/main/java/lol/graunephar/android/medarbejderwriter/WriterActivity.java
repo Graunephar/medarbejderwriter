@@ -5,14 +5,16 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.nfc.FormatException;
+import android.nfc.NdefMessage;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import org.ndeftools.Message;
 import org.ndeftools.MimeRecord;
@@ -31,12 +33,11 @@ import be.appfoundry.nfclibrary.utilities.interfaces.NfcWriteUtility;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import lol.graunephar.android.medarbejderwriter.utilities.NFCWriter;
-import lol.graunephar.android.medarbejderwriter.utilities.NFCWriterCallback;
+import lol.graunephar.android.medarbejderwriter.models.TagContent;
 import pl.tajchert.nammu.Nammu;
 import pl.tajchert.nammu.PermissionCallback;
 
-public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCWriterCallback {
+public class WriterActivity extends NfcActivity implements AsyncUiCallback {
 
     @BindView(R.id.writer_fun_label)
     TextView funLabel;
@@ -55,13 +56,10 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
 
     private boolean mReadyToWrite = false;
     private String TAG = WriterActivity.class.getName();
-    NFCWriter mWriter;
     private boolean mTagHasBeenPlaces = false;
+    private String CUSTOM_PACKAGE_NAME = "lol.graunephar.NFC";
+    private boolean mOnGoingWrite = false;
 
-
-    public WriterActivity() {
-        this.mWriter = new NFCWriter(this);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,35 +200,63 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
         if (!mReadyToWrite) {
             tellUser(getString(R.string.write_fill_fields));
             return;
-        } else if(!mTagHasBeenPlaces) {
+        } else if (!mTagHasBeenPlaces) {
             tellUser(getString(R.string.writer_tag_not_placed_message));
+            return;
+        } else if(mOnGoingWrite) {
+            tellUser(getString(R.string.writer_write_in_progress_message));
             return;
         }
 
+        String jsondata = gatherContentData();
+
+        final NdefMessage message = createMessage(jsondata);
+
+        mOnGoingWrite = true;
+
+        AsyncOperationCallback writecallback = new AsyncOperationCallback() {
+
+            @Override
+            public boolean performWrite(NfcWriteUtility writeUtility) throws ReadOnlyTagException, InsufficientCapacityException, TagNotPresentException, FormatException {
+                return writeUtility.writeNdefMessageToTagFromIntent(message, getIntent());
+            }
+        };
+
+        new WriteCallbackNfcAsync(this, writecallback).executeWriteOperation();
+
+    }
+
+    private String gatherContentData() {
+
+        String name = nameTxt.getText().toString().trim();
+        String fact = funTxt.getText().toString();
+        int points = Integer.parseInt(pointTxt.getText().toString());
+
+        TagContent content = new TagContent(name, fact, points);
+
+        Gson gson = new Gson();
+        String data = gson.toJson(content);
+
+        return data;
+    }
+
+    private NdefMessage createMessage(String jsondata) {
         AndroidApplicationRecord aar = new AndroidApplicationRecord();
-        aar.setPackageName("org.ndeftools.boilerplate");
+        aar.setPackageName(CUSTOM_PACKAGE_NAME);
         MimeRecord mimeRecord = new MimeRecord();
         mimeRecord.setMimeType("text/plain");
+
         try {
-            mimeRecord.setData("This is my data".getBytes("UTF-8"));
+            mimeRecord.setData(jsondata.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            tellUser(getString(R.string.writer_not_working_encoding_message));
         }
+
         final Message message = new Message(); //  org.ndeftools.Message
         message.add(aar);
         message.add(mimeRecord);
 
-
-            AsyncOperationCallback writecallback= new AsyncOperationCallback() {
-
-                @Override
-                public boolean performWrite(NfcWriteUtility writeUtility) throws ReadOnlyTagException, InsufficientCapacityException, TagNotPresentException, FormatException {
-                    return writeUtility.writeNdefMessageToTagFromIntent( message.getNdefMessage(),getIntent());
-                }
-            };
-
-            new WriteCallbackNfcAsync(this, writecallback).executeWriteOperation();
-
+        return message.getNdefMessage();
     }
 
     /* AsyncUiCallback methods */
@@ -239,6 +265,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
     public void callbackWithReturnValue(Boolean result) {
         String message = result ? getString(R.string.write_success_message) : getString(R.string.write_fail_message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        mOnGoingWrite = false;
     }
 
     @Override
@@ -249,33 +276,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCW
     @Override
     public void onError(Exception e) {
         Toast.makeText(this, getString(R.string.write_error), Toast.LENGTH_SHORT).show();
+        mOnGoingWrite = false;
     }
 
-
-    /** NFC Writer Callback methods **/
-    @Override
-    public void writeNdefSuccess() {
-        Toast.makeText(getApplicationContext(), "SUCCCESSSSSS", Toast.LENGTH_LONG).show();
-
-    }
-
-    @Override
-    public void writeNdefFailed(Exception e) {
-        Log.d(TAG, e.getMessage());
-    }
-
-    @Override
-    public void writeNdefNotWritable() {
-        Log.d(TAG, "NDEF NOT WRITABLE");
-    }
-
-    @Override
-    public void writeNdefTooSmall(int length, int maxSize) {
-        Log.d(TAG, "NDEF TO SMALL");
-    }
-
-    @Override
-    public void writeNdefCannotWriteTech() {
-        Log.d(TAG, "CANNOT WRITE TECH");
-    }
 }
