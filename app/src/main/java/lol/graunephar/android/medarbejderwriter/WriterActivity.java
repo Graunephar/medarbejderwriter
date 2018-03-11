@@ -8,6 +8,7 @@ import android.nfc.FormatException;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -24,10 +25,12 @@ import be.appfoundry.nfclibrary.utilities.interfaces.NfcWriteUtility;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import lol.graunephar.android.medarbejderwriter.utilities.NFCWriter;
+import lol.graunephar.android.medarbejderwriter.utilities.NFCWriterCallback;
 import pl.tajchert.nammu.Nammu;
 import pl.tajchert.nammu.PermissionCallback;
 
-public class WriterActivity extends NfcActivity implements AsyncUiCallback {
+public class WriterActivity extends NfcActivity implements AsyncUiCallback, NFCWriterCallback {
 
     @BindView(R.id.writer_fun_label)
     TextView funLabel;
@@ -44,7 +47,13 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
     @BindView(R.id.writer_write_btn)
     Button writeBtn;
     private boolean readyToWrite = false;
+    private String TAG = WriterActivity.class.getName();
+    NFCWriter mWriter;
 
+
+    public WriterActivity() {
+        this.mWriter = new NFCWriter(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,14 +191,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
             return;
         }
 
-        AsyncOperationCallback callback = new AsyncOperationCallback() {
-            @Override
-            public boolean performWrite(NfcWriteUtility writeUtility) throws ReadOnlyTagException, InsufficientCapacityException, TagNotPresentException, FormatException {
-                return writeUtility.writeNdefMessageToTagFromIntent(, getIntent());
-            }
-        };
-
-        new WriteEmailNfcAsync(this, callback).executeWriteOperation();
+        
     }
 
     /* AsyncUiCallback methods */
@@ -210,4 +212,31 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         Toast.makeText(this, getString(R.string.write_error), Toast.LENGTH_SHORT).show();
     }
 
+
+    /** NFC Writer Callback methods **/
+    @Override
+    public void writeNdefSuccess() {
+        Toast.makeText(getApplicationContext(), "SUCCCESSSSSS", Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void writeNdefFailed(Exception e) {
+        Log.d(TAG, e.getMessage());
+    }
+
+    @Override
+    public void writeNdefNotWritable() {
+        Log.d(TAG, "NDEF NOT WRITABLE");
+    }
+
+    @Override
+    public void writeNdefTooSmall(int length, int maxSize) {
+        Log.d(TAG, "NDEF TO SMALL");
+    }
+
+    @Override
+    public void writeNdefCannotWriteTech() {
+        Log.d(TAG, "CANNOT WRITE TECH");
+    }
 }
