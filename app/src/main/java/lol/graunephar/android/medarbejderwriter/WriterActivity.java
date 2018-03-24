@@ -262,8 +262,9 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         }
 
         final Message message = new Message(); //  org.ndeftools.Message
-        message.add(aar);
+
         message.add(mimeRecord);
+        message.add(aar);
 
         return message.getNdefMessage();
     }
