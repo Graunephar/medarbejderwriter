@@ -6,9 +6,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,6 +23,7 @@ import org.ndeftools.MimeRecord;
 import org.ndeftools.externaltype.AndroidApplicationRecord;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import be.appfoundry.nfclibrary.activities.NfcActivity;
 import be.appfoundry.nfclibrary.exceptions.InsufficientCapacityException;
@@ -57,8 +60,9 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
     private boolean mReadyToWrite = false;
     private String TAG = WriterActivity.class.getName();
     private boolean mTagHasBeenPlaces = false;
-    private String CUSTOM_PACKAGE_NAME = "lol.graunephar.NFC";
+    private String CUSTOM_PACKAGE_NAME = "lol.graunephar.android.nfc";
     private boolean mOnGoingWrite = false;
+    private Gson gson = new Gson();
 
 
     @Override
@@ -158,6 +162,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         Nammu.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+    //TODO Finish this
 
     private void askForPermissions() {
 
@@ -186,9 +191,14 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Toast.makeText(getApplicationContext(), getString(R.string.writer_message_new_tag_found) + "content", Toast.LENGTH_SHORT).show();
-        mTagHasBeenPlaces = true;
+        List<String> nfcdata = getNfcMessages();
+        String data = nfcdata.get(1); //TODO Make sure we not crash if empty tag!
+        data = "{" + data; //TODO: Solve this properly :p
+        TagContent content = gson.fromJson(data, TagContent.class);
+        String name = content.getName();
 
+        Toast.makeText(getApplicationContext(), getString(R.string.writer_message_new_tag_found) + " " + name, Toast.LENGTH_SHORT).show();
+        mTagHasBeenPlaces = true;
     }
 
     /**
@@ -203,7 +213,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         } else if (!mTagHasBeenPlaces) {
             tellUser(getString(R.string.writer_tag_not_placed_message));
             return;
-        } else if(mOnGoingWrite) {
+        } else if (mOnGoingWrite) {
             tellUser(getString(R.string.writer_write_in_progress_message));
             return;
         }
@@ -234,7 +244,6 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
 
         TagContent content = new TagContent(name, fact, points);
 
-        Gson gson = new Gson();
         String data = gson.toJson(content);
 
         return data;
