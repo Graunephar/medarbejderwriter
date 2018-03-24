@@ -1,14 +1,20 @@
 package lol.graunephar.android.medarbejderwriter;
 
-import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.NfcF;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,6 +26,7 @@ import org.ndeftools.Message;
 import org.ndeftools.MimeRecord;
 import org.ndeftools.externaltype.AndroidApplicationRecord;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -35,8 +42,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import lol.graunephar.android.medarbejderwriter.models.TagContentMessage;
+import lol.graunephar.android.medarbejderwriter.nfc.NFCReader;
+import lol.graunephar.android.medarbejderwriter.nfc.NFCWriter;
 
-public class WriterActivity extends NfcActivity implements AsyncUiCallback {
+public class WriterActivity extends AppCompatActivity implements AsyncUiCallback {
 
     @BindView(R.id.writer_fun_label)
     TextView funLabel;
@@ -59,6 +68,9 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
     private String CUSTOM_PACKAGE_NAME = "lol.graunephar.android.nfc";
     private boolean mOnGoingWrite = false;
     private Gson gson = new Gson();
+    private NFCReader mReader;
+    private Tag detectedTag;
+    private NFCWriter mWriter;
 
 
     @Override
@@ -67,10 +79,26 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         setContentView(R.layout.activity_writer);
 
         ButterKnife.bind(this);
-        
+
         fixUI();
+
+        mReader = new NFCReader(this);
+
+        mWriter = new NFCWriter();
+        mWriter.foregroundDispatch(this);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mWriter.disableForegroundDispatch(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mWriter.EnableForegroundDispatch(this);
+    }
 
     private void fixUI() {
 
@@ -153,21 +181,50 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
     /* NFC methods */
 
     /**
-     * Reada a tag when put near the phone
+     * Reads a tag when put near the phone
      *
      * @param intent
      */
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        List<String> nfcdata = getNfcMessages();
+/*        List<String> nfcdata = getNfcMessages();
         String data = nfcdata.get(1); //TODO Make sure we not crash if empty tag!
         data = "{" + data; //TODO: Solve this properly :p
         TagContentMessage content = gson.fromJson(data, TagContentMessage.class);
         String name = content.getName();
+        tellUser(name);
+        mTagHasBeenPlaces = true;*/
+        checkIfTag(intent);
+    }
 
-        Toast.makeText(getApplicationContext(), getString(R.string.writer_message_new_tag_found) + " " + name, Toast.LENGTH_SHORT).show();
-        mTagHasBeenPlaces = true;
+    private void checkIfTag(Intent intent) {
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        if (tag != null) {
+            detectedTag = tag;
+            mTagHasBeenPlaces = true;
+            readNFCData();
+        }
+    }
+
+    private void readNFCData() {
+
+        String prefix = getString(R.string.found_message_prefix);
+        String message;
+
+        try {
+            TagContentMessage content = mReader.readFromTag(getIntent(), detectedTag);
+            message = content.getName();
+
+        } catch (NFCReader.EmptytagException e) {
+            message = getString(R.string.empty_tag_messaage);
+        } catch (NFCReader.NotSupportedContentException e) {
+            message = getString(R.string.unsupported_tag_message);
+        } catch (IOException e) {
+            message = getString(R.string.reader_unable_read_message);
+        }
+
+        tellUser(prefix + message);
     }
 
     /**
@@ -191,17 +248,33 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
 
         final NdefMessage message = createMessage(jsondata);
 
-        mOnGoingWrite = true;
+        mOnGoingWrite = true; //TODO: Test two writes in a row
 
+        //TODO: SHould this be concurrent?
+        try {
+            NFCWriter.writeTag(detectedTag, message);
+            tellUser(getString(R.string.write_success_message));
+        } catch (NFCWriter.NFCFormatException e) {
+            tellUser(getString(R.string.format_error_message));
+        } catch (NFCWriter.NFCTagLostException e) {
+            tellUser(getString(R.string.taglost_error_message));
+        } catch (NFCWriter.NFCUnknownIOException e) {
+            tellUser(getString(R.string.unknown_write_error_message));
+        } finally {
+            mOnGoingWrite = false;
+        }
+
+
+        /*
         AsyncOperationCallback writecallback = new AsyncOperationCallback() {
 
             @Override
             public boolean performWrite(NfcWriteUtility writeUtility) throws ReadOnlyTagException, InsufficientCapacityException, TagNotPresentException, FormatException {
                 return writeUtility.writeNdefMessageToTagFromIntent(message, getIntent());
             }
-        };
+        };*/
 
-        new WriteCallbackNfcAsync(this, writecallback).executeWriteOperation();
+        //new WriteCallbackNfcAsync(this, writecallback).executeWriteOperation();
 
     }
 

@@ -13,4 +13,11 @@
     <string name="writer_tag_not_placed_message">You should place a tag before you can write</string>
     <string name="writer_not_working_encoding_message">Could not write the content you have provided. Have you used special characters?</string>
     <string name="writer_write_in_progress_message">Write already in progress please wait for it to finish</string>
+    <string name="empty_tag_messaage">Empty Tag</string>
+    <string name="unsupported_tag_message">Unknown tag</string>
+    <string name="reader_unable_read_message">Unreadable tag</string>
+    <string name="found_message_prefix">Found:</string>
+    <string name="unknown_write_error_message">Could not write to tag</string>
+    <string name="taglost_error_message">Tag was lost during write</string>
+    <string name="format_error_message">Tag could not be formattet</string>
 </resources>
