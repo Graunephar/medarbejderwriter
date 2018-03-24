@@ -4,13 +4,13 @@ package lol.graunephar.android.medarbejderwriter.models;
  * Created by daniel on 3/11/18.
  */
 
-public class TagContent {
+public class TagContentMessage {
 
     String name;
     String fact;
     Integer points;
 
-    public TagContent(String name, String funFact, Integer points) {
+    public TagContentMessage(String name, String funFact, Integer points) {
         this.name = name;
         this.fact = funFact;
         this.points = points;

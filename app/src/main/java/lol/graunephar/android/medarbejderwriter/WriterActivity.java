@@ -6,11 +6,9 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -36,9 +34,7 @@ import be.appfoundry.nfclibrary.utilities.interfaces.NfcWriteUtility;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import lol.graunephar.android.medarbejderwriter.models.TagContent;
-import pl.tajchert.nammu.Nammu;
-import pl.tajchert.nammu.PermissionCallback;
+import lol.graunephar.android.medarbejderwriter.models.TagContentMessage;
 
 public class WriterActivity extends NfcActivity implements AsyncUiCallback {
 
@@ -70,11 +66,8 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_writer);
 
-        Nammu.init(getApplicationContext());
         ButterKnife.bind(this);
-
-        askForPermissions();
-
+        
         fixUI();
     }
 
@@ -157,30 +150,6 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
-    /* Permissions */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Nammu.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-    //TODO Finish this
-
-    private void askForPermissions() {
-
-        Nammu.askForPermission(this, Manifest.permission.NFC, new PermissionCallback() {
-            @Override
-            public void permissionGranted() {
-
-            }
-
-            @Override
-            public void permissionRefused() {
-                askForPermissions();
-            }
-        });
-
-    }
-
-
     /* NFC methods */
 
     /**
@@ -194,7 +163,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         List<String> nfcdata = getNfcMessages();
         String data = nfcdata.get(1); //TODO Make sure we not crash if empty tag!
         data = "{" + data; //TODO: Solve this properly :p
-        TagContent content = gson.fromJson(data, TagContent.class);
+        TagContentMessage content = gson.fromJson(data, TagContentMessage.class);
         String name = content.getName();
 
         Toast.makeText(getApplicationContext(), getString(R.string.writer_message_new_tag_found) + " " + name, Toast.LENGTH_SHORT).show();
@@ -242,7 +211,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         String fact = funTxt.getText().toString();
         int points = Integer.parseInt(pointTxt.getText().toString());
 
-        TagContent content = new TagContent(name, fact, points);
+        TagContentMessage content = new TagContentMessage(name, fact, points);
 
         String data = gson.toJson(content);
 
@@ -255,6 +224,7 @@ public class WriterActivity extends NfcActivity implements AsyncUiCallback {
         MimeRecord mimeRecord = new MimeRecord();
         mimeRecord.setMimeType("text/plain");
 
+        //vnd.android.nfc://ext//graunephar.lol:nfc
         try {
             mimeRecord.setData(jsondata.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
