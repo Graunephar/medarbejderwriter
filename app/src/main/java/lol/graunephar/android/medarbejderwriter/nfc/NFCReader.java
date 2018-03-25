@@ -58,10 +58,11 @@ public class NFCReader {
             throw new EmptytagException("The tag is Empty");
         }
 
+        ndef.close();
+
         NdefRecord[] records = ndefMessage.getRecords();
 
         TagContentMessage res = getContent(records);
-        ndef.close();
 
         return res;
 
