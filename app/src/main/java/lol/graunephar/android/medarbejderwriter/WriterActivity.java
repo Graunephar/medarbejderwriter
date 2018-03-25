@@ -167,7 +167,7 @@ public class WriterActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if(!mOnGoingWrite) {
+        if (!mOnGoingWrite) {
             checkIfTag(intent);
         } else {
             tellUser(getString(R.string.write_progress_please_message));
@@ -208,7 +208,6 @@ public class WriterActivity extends AppCompatActivity {
      */
     @OnClick(R.id.writer_write_btn)
     public void startWritingToTag() {
-        tellUser(getString(R.string.write_started_message));
 
         if (!mReadyToWrite) {
             tellUser(getString(R.string.write_fill_fields));
@@ -220,6 +219,8 @@ public class WriterActivity extends AppCompatActivity {
             tellUser(getString(R.string.writer_write_in_progress_message));
             return;
         }
+        
+        tellUser(getString(R.string.write_started_message));
 
         String jsondata = gatherContentData();
 
