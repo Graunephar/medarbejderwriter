@@ -16,8 +16,9 @@
     <string name="empty_tag_messaage">Empty Tag</string>
     <string name="unsupported_tag_message">Unknown tag</string>
     <string name="reader_unable_read_message">Unreadable tag</string>
-    <string name="found_message_prefix">Found:</string>
+    <string name="found_message_prefix">Found: </string>
     <string name="unknown_write_error_message">Could not write to tag</string>
     <string name="taglost_error_message">Tag was lost during write</string>
     <string name="format_error_message">Tag could not be formattet</string>
+    <string name="write_progress_please_message">Write in progress, please keep tag still</string>
 </resources>

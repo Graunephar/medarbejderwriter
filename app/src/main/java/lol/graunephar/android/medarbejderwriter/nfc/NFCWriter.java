@@ -13,7 +13,12 @@ import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
 import android.util.Log;
 
+import org.ndeftools.Message;
+import org.ndeftools.MimeRecord;
+import org.ndeftools.externaltype.AndroidApplicationRecord;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import lol.graunephar.android.medarbejderwriter.WriterActivity;
 
@@ -29,8 +34,12 @@ public class NFCWriter {
     private PendingIntent pendingIntent;
 
     private static final String TAG = NFCWriter.class.getSimpleName();
+    public static final String SCANNER_PACKAGE_NAME = "lol.graunephar.android.nfc";
 
-    public static void writeTag(Tag tag, NdefMessage message) throws NFCFormatException, NFCTagLostException, NFCUnknownIOException {
+    public static void writeTag(Tag tag, String jsondata) throws NFCFormatException, NFCTagLostException, NFCUnknownIOException, UnsupportedJSONEncodingInData {
+
+        NdefMessage message = createMessage(jsondata);
+
         if(tag == null) {
             throw new NFCTagLostException("Tag not present");
         }
@@ -56,6 +65,29 @@ public class NFCWriter {
         }
     }
 
+
+    private static NdefMessage createMessage(String jsondata) throws UnsupportedJSONEncodingInData {
+        AndroidApplicationRecord aar = new AndroidApplicationRecord();
+        aar.setPackageName(SCANNER_PACKAGE_NAME);
+        MimeRecord mimeRecord = new MimeRecord();
+        mimeRecord.setMimeType("text/plain");
+
+        //vnd.android.nfc://ext//graunephar.lol:nfc
+        try {
+            mimeRecord.setData(jsondata.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new UnsupportedJSONEncodingInData("JSON WRONG");
+        }
+
+        final Message message = new Message(); //  org.ndeftools.Message
+
+        message.add(mimeRecord);
+        message.add(aar);
+
+        return message.getNdefMessage();
+    }
+
+
     //Using the foreground dispatch system to take priority over AAR
     //So the reader  does not open when writing to tag
     //https://developer.android.com/guide/topics/connectivity/nfc/advanced-nfc.html
@@ -68,6 +100,7 @@ public class NFCWriter {
 
         //TODO: Specify text
         IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        IntentFilter empty = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
         try {
             ndef.addDataType("*/*");    /* Handles all MIME based dispatches.
                                        You should specify only the ones that you need. */
@@ -75,7 +108,7 @@ public class NFCWriter {
             throw new RuntimeException("fail", e);
         }
 
-        intentFiltersArray = new IntentFilter[]{ndef,};
+        intentFiltersArray = new IntentFilter[]{ndef,empty};
 
         techListsArray = new String[][]{new String[]{NfcF.class.getName()}};
 
@@ -125,6 +158,12 @@ public class NFCWriter {
 
     public static class NFCFormatException extends NFCWriterException{
         NFCFormatException(String message) {
+            super(message);
+        }
+    }
+
+    public static class UnsupportedJSONEncodingInData extends NFCWriterException {
+        UnsupportedJSONEncodingInData(String message) {
             super(message);
         }
     }

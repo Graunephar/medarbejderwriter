@@ -2,12 +2,11 @@ package lol.graunephar.android.medarbejderwriter.nfc;
 
 import android.content.Context;
 import android.content.Intent;
+import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
-import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -43,36 +42,43 @@ public class NFCReader {
         }
 
         ndef.connect();
+        NdefMessage ndefMessage;
+        try {
+            ndefMessage = ndef.getNdefMessage();
 
-        Parcelable[] messages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+        } catch (FormatException e) {
+            ndef.close();
+            throw new FormatetWrongException("Format exception");
+        }
 
-        if (messages == null) {
+
+        if (ndefMessage == null) {
             ndef.close(); //Always close the connection
             Log.d(TAG, "Empty tag");
             throw new EmptytagException("The tag is Empty");
         }
 
-        TagContentMessage res = getContent(messages);
+        NdefRecord[] records = ndefMessage.getRecords();
 
+        TagContentMessage res = getContent(records);
         ndef.close();
 
         return res;
 
+
+
     }
 
-    private TagContentMessage getContent(Parcelable[] messages) throws NotSupportedContentException {
-        NdefMessage[] ndefMessages = new NdefMessage[messages.length];
-        for (int i = 0; i < messages.length; i++) {
-            ndefMessages[i] = (NdefMessage) messages[i];
-        }
+    private TagContentMessage getContent(NdefRecord[] records) throws NotSupportedContentException {
 
-        if (!isThisOurTag(ndefMessages)) {
+
+        if (!isThisOurTag(records)) {
             Log.d(TAG, "Not our tag");
             throw new NotSupportedContentException("Tag is not out type");
 
         }
 
-        NdefRecord record = ndefMessages[0].getRecords()[0];
+        NdefRecord record = records[0];
         byte[] payload = record.getPayload();
         String jsonstring = new String(payload);
         Log.d(TAG, "IS ourtag");
@@ -82,17 +88,14 @@ public class NFCReader {
         return res;
     }
 
-    private boolean isThisOurTag(NdefMessage[] ndefMessages) {
+    private boolean isThisOurTag(NdefRecord[] records) {
 
-        NdefRecord[] records = ndefMessages[0].getRecords();
-
-        String packagename = mContext.getPackageName();
         for (int i = 0; i < records.length; i++) {
 
             NdefRecord type = records[i];
             byte[] aar = type.getPayload();
             String aarcontent = new String(aar);
-            if (aarcontent.equals((packagename))) return true;
+            if (aarcontent.equals((NFCWriter.SCANNER_PACKAGE_NAME))) return true;
         }
 
         return false;
@@ -104,6 +107,12 @@ public class NFCReader {
         public NFCReaderException(String messsage) {
             super(messsage);
             this.message = messsage;
+        }
+    }
+
+    public class FormatetWrongException extends NFCReaderException {
+        public FormatetWrongException(String messsage) {
+            super(messsage);
         }
     }
 
