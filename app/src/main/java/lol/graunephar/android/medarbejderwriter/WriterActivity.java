@@ -84,6 +84,7 @@ public class WriterActivity extends AppCompatActivity {
         funLabel.setText(R.string.writer_fun_label_text);
         nameLabel.setText(R.string.writer_name_label_text);
         pointLabel.setText(R.string.writer_point_label_text);
+        writeBtn.setText(R.string.writer_write_btn_text);
         greyoutButton(true);
 
         addChangeListeners();
@@ -185,7 +186,7 @@ public class WriterActivity extends AppCompatActivity {
 
     private void readNFCData() {
 
-        String prefix = getString(R.string.found_message_prefix);
+        String prefix = getString(R.string.found_message_prefix) + " ";
         String message;
 
         try {
@@ -219,7 +220,7 @@ public class WriterActivity extends AppCompatActivity {
             tellUser(getString(R.string.writer_write_in_progress_message));
             return;
         }
-        
+
         tellUser(getString(R.string.write_started_message));
 
         String jsondata = gatherContentData();
@@ -237,6 +238,8 @@ public class WriterActivity extends AppCompatActivity {
             tellUser(getString(R.string.unknown_write_error_message));
         } catch (NFCWriter.UnsupportedJSONEncodingInData e) {
             tellUser(getString(R.string.writer_not_working_encoding_message));
+        } catch (NFCWriter.NotWritableTagException e) {
+            tellUser(getString(R.string.unsupported_tag_message_no_write));
         } finally {
             mOnGoingWrite = false;
         }

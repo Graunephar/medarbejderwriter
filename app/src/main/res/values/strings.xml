@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Medarbejder Writer</string>
+    <string name="app_name">Nature Tech - Writer</string>
     <string name="writer_fun_label_text">Fun fact</string>
     <string name="writer_name_label_text">Name of ressource</string>
     <string name="writer_point_label_text">Point for finding</string>
@@ -21,4 +21,6 @@
     <string name="taglost_error_message">Tag was lost during write</string>
     <string name="format_error_message">Tag could not be formattet</string>
     <string name="write_progress_please_message">Write in progress, please keep tag still</string>
+    <string name="writer_write_btn_text">Write to tag</string>
+    <string name="unsupported_tag_message_no_write">Unable to write to this type of tag</string>
 </resources>
