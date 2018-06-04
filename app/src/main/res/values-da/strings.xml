@@ -4,4 +4,22 @@
     <string name="writer_fun_label_text">Noget sjovt</string>
     <string name="writer_name_label_text">Navn på enhed</string>
     <string name="writer_point_label_text">Point for fund</string>
+    <string name="writer_message_new_tag_found">Nyt tag fundet</string>
+    <string name="write_fail_message">Fejl!</string>
+    <string name="write_success_message">Succes</string>
+    <string name="write_started_message">Startede med at skrive</string>
+    <string name="write_not_able_message">Kunne ikke skrive</string>
+    <string name="write_error">Der opstod en fejl</string>
+    <string name="write_fill_fields">Udfyld venligst alle oplysninger</string>
+    <string name="writer_tag_not_placed_message">Du skal placere et tag inden du kan skrive</string>
+    <string name="writer_not_working_encoding_message">Kunne ikke skrive</string>
+    <string name="writer_write_in_progress_message">Skrivning allerede påbegyndt</string>
+    <string name="empty_tag_messaage">Tomt tag</string>
+    <string name="unsupported_tag_message">Ukendt tag</string>
+    <string name="reader_unable_read_message">Ikke læseligt tag</string>
+    <string name="found_message_prefix">"Fundet: "</string>
+    <string name="unknown_write_error_message">Kunne ikke skrive</string>
+    <string name="taglost_error_message">Tag forsvandt under skrivning</string>
+    <string name="format_error_message">Tag kunne ikke formateres</string>
+    <string name="write_progress_please_message">Skrivning i gang, hold venligst tagget stille</string>
 </resources>
