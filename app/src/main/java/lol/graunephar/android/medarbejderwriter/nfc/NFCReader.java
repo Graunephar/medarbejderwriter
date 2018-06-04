@@ -7,6 +7,7 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -35,8 +36,8 @@ public class NFCReader {
 
         Ndef ndef = Ndef.get(tag);
 
-        if (ndef == null) {
-            //As ndef is null, this is the only place were we fo not have to close the connection
+        if(ndef == null){
+            ndef.close(); //Always close the connection
             throw new NotSupportedContentException("This is a strange tag");
         }
 
@@ -53,7 +54,7 @@ public class NFCReader {
 
         if (ndefMessage == null) {
             ndef.close(); //Always close the connection
-            //Log.d(TAG, "Empty tag");
+            Log.d(TAG, "Empty tag");
             throw new EmptytagException("The tag is Empty");
         }
 
@@ -66,13 +67,14 @@ public class NFCReader {
         return res;
 
 
+
     }
 
     private TagContentMessage getContent(NdefRecord[] records) throws NotSupportedContentException {
 
 
         if (!isThisOurTag(records)) {
-            //Log.d(TAG, "Not our tag");
+            Log.d(TAG, "Not our tag");
             throw new NotSupportedContentException("Tag is not out type");
 
         }
@@ -80,7 +82,7 @@ public class NFCReader {
         NdefRecord record = records[0];
         byte[] payload = record.getPayload();
         String jsonstring = new String(payload);
-        //Log.d(TAG, "IS ourtag");
+        Log.d(TAG, "IS ourtag");
 
         TagContentMessage res = gson.fromJson(jsonstring, TagContentMessage.class);
 

@@ -11,6 +11,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
+import android.util.Log;
 
 import org.ndeftools.Message;
 import org.ndeftools.MimeRecord;
@@ -35,31 +36,30 @@ public class NFCWriter {
     private static final String TAG = NFCWriter.class.getSimpleName();
     public static final String SCANNER_PACKAGE_NAME = "lol.graunephar.android.nfc";
 
-    public static void writeTag(Tag tag, String jsondata) throws NFCFormatException, NFCTagLostException, NFCUnknownIOException, UnsupportedJSONEncodingInData, NotWritableTagException {
+    public static void writeTag(Tag tag, String jsondata) throws NFCFormatException, NFCTagLostException, NFCUnknownIOException, UnsupportedJSONEncodingInData {
 
         NdefMessage message = createMessage(jsondata);
 
-        if (tag == null) {
+        if(tag == null) {
             throw new NFCTagLostException("Tag not present");
         }
         Ndef ndeftag = Ndef.get(tag);
 
-        if(ndeftag == null) throw new NotWritableTagException("We do not know this tag");
         try {
             ndeftag.connect();
             ndeftag.writeNdefMessage(message);
         } catch (IOException e) {
-            //Log.e(TAG, "IOException");
+            Log.e(TAG, "IOException");
             throw new NFCUnknownIOException("Unknown exception");
         } catch (FormatException e) {
-            //Log.e(TAG, "Format exception");
+            Log.e(TAG, "Format exception");
             throw new NFCFormatException("Format exception");
         } finally {
 
             try {
-                if (ndeftag != null) ndeftag.close();
+                ndeftag.close();
             } catch (IOException e) {
-                //Log.e(TAG, "IOException while closing Tag", e);
+                Log.e(TAG, "IOException while closing Tag", e);
                 throw new NFCUnknownIOException("Error while closing tag");
             }
         }
@@ -108,7 +108,7 @@ public class NFCWriter {
             throw new RuntimeException("fail", e);
         }
 
-        intentFiltersArray = new IntentFilter[]{ndef, empty};
+        intentFiltersArray = new IntentFilter[]{ndef,empty};
 
         techListsArray = new String[][]{new String[]{NfcF.class.getName()}};
 
@@ -119,7 +119,7 @@ public class NFCWriter {
     }
 
     public void EnableForegroundDispatch(Activity activity) {
-        if (mAdapter != null) {
+        if(mAdapter != null) {
             mAdapter.enableForegroundDispatch(activity, pendingIntent, intentFiltersArray, techListsArray);
         }
     }
@@ -127,13 +127,12 @@ public class NFCWriter {
 
     public static class NFCWriterException extends IOException {
         private final String message;
-
         NFCWriterException(String message) {
             this.message = message;
         }
     }
 
-    public static class NotWritableTagException extends NFCWriterException {
+    static class NotWritableTagException extends NFCWriterException {
         NotWritableTagException(String message) {
             super(message);
         }
@@ -157,7 +156,7 @@ public class NFCWriter {
         }
     }
 
-    public static class NFCFormatException extends NFCWriterException {
+    public static class NFCFormatException extends NFCWriterException{
         NFCFormatException(String message) {
             super(message);
         }

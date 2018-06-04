@@ -1,27 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Nature Tech - Writer</string>
+    <string name="app_name">Medarbejder Writer</string>
     <string name="writer_fun_label_text">Noget sjovt</string>
     <string name="writer_name_label_text">Navn på enhed</string>
     <string name="writer_point_label_text">Point for fund</string>
-    <string name="writer_message_new_tag_found">"Nyt tag fundet med indholdet: "</string>
-    <string name="write_fail_message">Fejl!</string>
-    <string name="write_success_message">Succes</string>
-    <string name="write_started_message">Skriver til Tag</string>
-    <string name="write_not_able_message">Vi kunne ikke skrive</string>
-    <string name="write_error">Der opstod en fejl</string>
-    <string name="write_fill_fields">Fyld venligst alle felter ud</string>
-    <string name="writer_tag_not_placed_message">Du skal placere et tag før du kan skrive</string>
-    <string name="writer_not_working_encoding_message">Kunne ikke skrive. Har du brugt specielle karaktere?</string>
-    <string name="writer_write_in_progress_message">Skrivning allerede i gang. Vent venligst til den er færdig</string>
-    <string name="empty_tag_messaage">Tomt tag</string>
-    <string name="unsupported_tag_message">Ukendt indhold</string>
-    <string name="reader_unable_read_message">Ulæseligt tag</string>
-    <string name="found_message_prefix">Fundet: </string>
-    <string name="unknown_write_error_message">Kunne ikke skrive til tag</string>
-    <string name="taglost_error_message">Tag forsvandt under skrivning</string>
-    <string name="format_error_message">Tag kunne ikke formateres</string>
-    <string name="write_progress_please_message">Skrivning i gang, hold venligst tagget stille</string>
-    <string name="writer_write_btn_text">Skriv til tag</string>
-    <string name="unsupported_tag_message_no_write">Kan ikke skrive til denne type tag</string>
 </resources>
